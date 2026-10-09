@@ -1,0 +1,22 @@
+[tool.black]
+line-length = 88
+target-version = ["py310"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+# тести навмисно використовують lambda-політики, як у завданні
+per-file-ignores = { "tests/*" = ["E731", "E501"] }
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+files = ["core.py", "app.py", "tests"]
+exclude = ["starter_imperative.py"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
