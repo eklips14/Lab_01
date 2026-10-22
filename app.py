@@ -1,12 +1,3 @@
-"""Оболонка побічних ефектів (I/O shell) для варіанта 9 - прокат автомобілів.
-
-Тут і ТІЛЬКИ тут живуть побічні ефекти: print і time.time.
-Ядро (core.py) лише отримує дані й повертає новий результат.
-
-Запуск:
-    python app.py
-"""
-
 from __future__ import annotations
 
 import time
@@ -89,7 +80,6 @@ RENTALS: list[Rental] = [
     },
 ]
 
-# Конфігурація політик - звичайні дані, які передаються в ядро явно.
 DISCOUNT_TIERS: Sequence[tuple[int, float]] = ((7, 0.10), (14, 0.15), (30, 0.25))
 INSURANCE_RATES = {
     "economy": 0.05,
@@ -99,13 +89,7 @@ INSURANCE_RATES = {
 }
 
 
-# ---------------------------------------------------------------------------
-# I/O: рендеринг звіту (лише споживає чистий результат)
-# ---------------------------------------------------------------------------
-
-
 def render_report(title: str, report: Report) -> None:
-    """Друкує звіт. Нічого не обчислює і нічого не змінює."""
     print(f"=== {title} ===")
     print(
         f"{'ID':>4} {'Клас':<10} {'Днів':>4} {'База':>10} {'Знижка':>9} "
@@ -126,7 +110,6 @@ def render_report(title: str, report: Report) -> None:
 
 
 def render_stamped(report: Report) -> None:
-    """Демонстрація інжекції часу: time.time передається в ядро як Callable."""
     stamped = stamp_report(report, time.time)
     ts = float(str(stamped["generated_at"]))
     when = datetime.fromtimestamp(ts, tz=timezone.utc).isoformat(timespec="seconds")
@@ -134,13 +117,7 @@ def render_stamped(report: Report) -> None:
     print()
 
 
-# ---------------------------------------------------------------------------
-# Точка входу
-# ---------------------------------------------------------------------------
-
-
 def run(rentals: Sequence[Rental]) -> None:
-    # Завдання 1: чиста функція з явними параметрами (без глобалів).
     basic = process_rentals_pure(
         rentals,
         min_days=2,
@@ -150,7 +127,6 @@ def run(rentals: Sequence[Rental]) -> None:
     )
     render_report("Завдання 1: process_rentals_pure", basic)
 
-    # Завдання 2: той самий розрахунок через фабрику з Callable-політиками.
     standard = make_processor(
         accept=make_min_days_filter(2),
         apply_discount=make_duration_discount(DISCOUNT_TIERS),
@@ -158,8 +134,6 @@ def run(rentals: Sequence[Rental]) -> None:
     )
     render_report("Завдання 2: make_processor (стандартні політики)", standard(rentals))
 
-    # Інша конфігурація: купон + відсоткова знижка (compose/pipe),
-    # фіксована страховка за день, без обмеження на тривалість.
     promo_discount = pipe(make_percent_off(5), make_coupon(50.0))
     promo = make_processor(
         accept=make_min_days_filter(1),
@@ -168,7 +142,6 @@ def run(rentals: Sequence[Rental]) -> None:
     )
     render_report("Завдання 2: make_processor (акційні політики)", promo(rentals))
 
-    # Завдання 3: час приходить ззовні, ядро лишається чистим.
     render_stamped(basic)
 
 

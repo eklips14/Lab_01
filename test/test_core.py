@@ -1,5 +1,3 @@
-"""pytest-тести чистого ядра (варіант 9 - прокат автомобілів)."""
-
 from __future__ import annotations
 
 from collections.abc import Callable
@@ -87,7 +85,6 @@ def sample_rentals() -> list[Rental]:
 
 
 def run_pure(rentals: list[Rental]) -> Report:
-    """Стандартна конфігурація process_rentals_pure для тестів."""
     return process_rentals_pure(
         rentals,
         min_days=2,
@@ -97,21 +94,16 @@ def run_pure(rentals: list[Rental]) -> Report:
     )
 
 
-# ---------------------------------------------------------------------------
-# Референтна прозорість та відсутність мутацій
-# ---------------------------------------------------------------------------
-
-
 def test_referential_transparency(sample_rentals: list[Rental]) -> None:
     r1 = run_pure(sample_rentals)
     r2 = run_pure(sample_rentals)
-    assert r1 == r2  # той самий вхід -> той самий вихід
+    assert r1 == r2
 
 
 def test_no_mutation(sample_rentals: list[Rental]) -> None:
     original = deepcopy(sample_rentals)
     run_pure(sample_rentals)
-    assert sample_rentals == original  # вхід не змінюється
+    assert sample_rentals == original
 
 
 def test_result_records_are_new_objects(sample_rentals: list[Rental]) -> None:
@@ -130,11 +122,6 @@ def test_processor_no_mutation(sample_rentals: list[Rental]) -> None:
     )
     processor(sample_rentals)
     assert sample_rentals == original
-
-
-# ---------------------------------------------------------------------------
-# Коректність обчислень
-# ---------------------------------------------------------------------------
 
 
 def test_base_price() -> None:
@@ -178,25 +165,16 @@ def test_with_pricing_returns_new_dict() -> None:
 
 def test_process_rentals_pure_values(sample_rentals: list[Rental]) -> None:
     result = run_pure(sample_rentals)
-    # Відкинуто: id=3 (1 день < 2), id=5 (cancelled), id=6 (pending)
     assert [r["id"] for r in result["rentals"]] == [1, 2, 4]
     assert result["count"] == 3
 
     by_id = {r["id"]: r for r in result["rentals"]}
-    # id=1: 3*100 = 300, знижка 0, страх. 5% -> 315
     assert by_id[1]["total"] == pytest.approx(315.0)
-    # id=2: 7*200 = 1400, знижка 10% = 140 -> 1260, страх. 8% = 100.8 -> 1360.8
     assert by_id[2]["discount"] == pytest.approx(140.0)
     assert by_id[2]["total"] == pytest.approx(1360.8)
-    # id=4: 30*400 = 12000, знижка 25% = 3000 -> 9000, страх. 18% = 1620 -> 10620
     assert by_id[4]["total"] == pytest.approx(10620.0)
 
     assert result["revenue"] == pytest.approx(315.0 + 1360.8 + 10620.0)
-
-
-# ---------------------------------------------------------------------------
-# Callable-політики
-# ---------------------------------------------------------------------------
 
 
 def test_callable_policies(sample_rentals: list[Rental]) -> None:
@@ -209,7 +187,6 @@ def test_callable_policies(sample_rentals: list[Rental]) -> None:
     )
     result = processor(sample_rentals)
 
-    # Пройшли: id=2 (1400), id=3 (500), id=4 (12000); id=1 (300) - відкинуто
     assert [r["id"] for r in result["rentals"]] == [2, 3, 4]
     expected = sum(b * 0.9 * 1.2 for b in (1400.0, 500.0, 12000.0))
     assert result["revenue"] == pytest.approx(expected)
@@ -248,7 +225,7 @@ def test_swapping_policy_changes_only_that_part(sample_rentals: list[Rental]) ->
 def test_make_duration_discount_is_isolated_from_later_changes() -> None:
     tiers = [(7, 0.5)]
     policy = make_duration_discount(tiers)
-    tiers.append((1, 0.99))  # зміна зовнішнього списку не впливає на політику
+    tiers.append((1, 0.99))
     rental: Rental = {
         "id": 1,
         "car_class": "economy",
@@ -257,11 +234,6 @@ def test_make_duration_discount_is_isolated_from_later_changes() -> None:
         "status": "confirmed",
     }
     assert policy(rental, 20.0) == 20.0
-
-
-# ---------------------------------------------------------------------------
-# Інжекція залежностей (час)
-# ---------------------------------------------------------------------------
 
 
 def test_stamp_total_uses_injected_clock() -> None:
@@ -279,22 +251,17 @@ def test_stamp_report_does_not_mutate(sample_rentals: list[Rental]) -> None:
     assert "generated_at" not in report
 
 
-# ---------------------------------------------------------------------------
-# Додаткові вправи
-# ---------------------------------------------------------------------------
-
-
 def test_compose() -> None:
     inc: Callable[[int], int] = lambda x: x + 1
     dbl: Callable[[int], int] = lambda x: x * 2
-    assert compose(inc, dbl)(5) == 11  # inc(dbl(5))
-    assert compose(dbl, inc)(5) == 12  # dbl(inc(5))
+    assert compose(inc, dbl)(5) == 11
+    assert compose(dbl, inc)(5) == 12
 
 
 def test_pipe_builds_discount_from_small_functions() -> None:
     discount = pipe(make_percent_off(10), make_coupon(20.0))
-    assert discount(200.0) == pytest.approx(160.0)  # 200*0.9 = 180, -20 = 160
-    assert make_coupon(500.0)(100.0) == 0.0  # не від'ємна
+    assert discount(200.0) == pytest.approx(160.0)
+    assert make_coupon(500.0)(100.0) == 0.0
 
     rental: Rental = {
         "id": 1,
@@ -318,7 +285,7 @@ def test_mark_cancelled_returns_new_list(sample_rentals: list[Rental]) -> None:
     assert sample_rentals == original
     assert updated is not sample_rentals
     assert [r["status"] for r in updated[:2]] == ["cancelled", "cancelled"]
-    assert updated[2] is sample_rentals[2]  # незмінені записи можна ділити
+    assert updated[2] is sample_rentals[2]
 
 
 def test_totals_by_class(sample_rentals: list[Rental]) -> None:
