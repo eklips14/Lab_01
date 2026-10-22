@@ -1,21 +1,17 @@
 """Оболонка побічних ефектів (I/O shell) для варіанта 9 - прокат автомобілів.
 
-Тут і ТІЛЬКИ тут живуть побічні ефекти: читання файлу, print, time.time.
+Тут і ТІЛЬКИ тут живуть побічні ефекти: print і time.time.
 Ядро (core.py) лише отримує дані й повертає новий результат.
 
 Запуск:
-    python app.py                 # дані з data/rentals.json
-    python app.py шлях/до/файлу   # інший JSON-файл
+    python app.py
 """
 
 from __future__ import annotations
 
-import json
-import sys
 import time
 from collections.abc import Sequence
 from datetime import datetime, timezone
-from pathlib import Path
 
 from core import (
     Rental,
@@ -34,7 +30,64 @@ from core import (
     totals_by_class,
 )
 
-DATA_FILE = Path(__file__).with_name("data") / "rentals.json"
+RENTALS: list[Rental] = [
+    {
+        "id": 1,
+        "car_class": "economy",
+        "days": 3,
+        "daily_rate": 800.0,
+        "status": "confirmed",
+    },
+    {
+        "id": 2,
+        "car_class": "comfort",
+        "days": 7,
+        "daily_rate": 1200.0,
+        "status": "confirmed",
+    },
+    {
+        "id": 3,
+        "car_class": "business",
+        "days": 1,
+        "daily_rate": 2500.0,
+        "status": "confirmed",
+    },
+    {
+        "id": 4,
+        "car_class": "premium",
+        "days": 14,
+        "daily_rate": 4000.0,
+        "status": "confirmed",
+    },
+    {
+        "id": 5,
+        "car_class": "economy",
+        "days": 10,
+        "daily_rate": 750.0,
+        "status": "cancelled",
+    },
+    {
+        "id": 6,
+        "car_class": "comfort",
+        "days": 30,
+        "daily_rate": 1100.0,
+        "status": "confirmed",
+    },
+    {
+        "id": 7,
+        "car_class": "business",
+        "days": 5,
+        "daily_rate": 2300.0,
+        "status": "pending",
+    },
+    {
+        "id": 8,
+        "car_class": "suv",
+        "days": 4,
+        "daily_rate": 1900.0,
+        "status": "confirmed",
+    },
+]
 
 # Конфігурація політик - звичайні дані, які передаються в ядро явно.
 DISCOUNT_TIERS: Sequence[tuple[int, float]] = ((7, 0.10), (14, 0.15), (30, 0.25))
@@ -44,18 +97,6 @@ INSURANCE_RATES = {
     "business": 0.12,
     "premium": 0.18,
 }
-
-
-# ---------------------------------------------------------------------------
-# I/O: читання
-# ---------------------------------------------------------------------------
-
-
-def load_rentals(path: Path) -> list[Rental]:
-    """Читає список прокатів із JSON-файлу (побічний ефект - файл)."""
-    with path.open(encoding="utf-8") as fh:
-        data: list[Rental] = json.load(fh)
-    return data
 
 
 # ---------------------------------------------------------------------------
@@ -131,16 +172,5 @@ def run(rentals: Sequence[Rental]) -> None:
     render_stamped(basic)
 
 
-def main(argv: Sequence[str]) -> int:
-    path = Path(argv[1]) if len(argv) > 1 else DATA_FILE
-    try:
-        rentals = load_rentals(path)
-    except (OSError, json.JSONDecodeError) as exc:
-        print(f"Не вдалося прочитати {path}: {exc}", file=sys.stderr)
-        return 1
-    run(rentals)
-    return 0
-
-
 if __name__ == "__main__":
-    raise SystemExit(main(sys.argv))
+    run(RENTALS)

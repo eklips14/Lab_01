@@ -38,6 +38,54 @@ TIERS = ((7, 0.10), (30, 0.25))
 RATES = {"economy": 0.05, "comfort": 0.08, "business": 0.12, "premium": 0.18}
 
 
+@pytest.fixture
+def sample_rentals() -> list[Rental]:
+    return [
+        {
+            "id": 1,
+            "car_class": "economy",
+            "days": 3,
+            "daily_rate": 100.0,
+            "status": "confirmed",
+        },
+        {
+            "id": 2,
+            "car_class": "comfort",
+            "days": 7,
+            "daily_rate": 200.0,
+            "status": "confirmed",
+        },
+        {
+            "id": 3,
+            "car_class": "business",
+            "days": 1,
+            "daily_rate": 500.0,
+            "status": "confirmed",
+        },
+        {
+            "id": 4,
+            "car_class": "premium",
+            "days": 30,
+            "daily_rate": 400.0,
+            "status": "confirmed",
+        },
+        {
+            "id": 5,
+            "car_class": "economy",
+            "days": 10,
+            "daily_rate": 100.0,
+            "status": "cancelled",
+        },
+        {
+            "id": 6,
+            "car_class": "suv",
+            "days": 2,
+            "daily_rate": 300.0,
+            "status": "pending",
+        },
+    ]
+
+
 def run_pure(rentals: list[Rental]) -> Report:
     """Стандартна конфігурація process_rentals_pure для тестів."""
     return process_rentals_pure(
@@ -152,9 +200,9 @@ def test_process_rentals_pure_values(sample_rentals: list[Rental]) -> None:
 
 
 def test_callable_policies(sample_rentals: list[Rental]) -> None:
-    accept = lambda r: r["status"] == "confirmed" and base_price(r) >= 500  # noqa: E731
-    apply_discount: DiscountFn = lambda r, p: p * 0.9  # noqa: E731
-    insurance_fee: InsuranceFn = lambda r, p: p * 0.2  # noqa: E731
+    accept = lambda r: r["status"] == "confirmed" and base_price(r) >= 500
+    apply_discount: DiscountFn = lambda r, p: p * 0.9
+    insurance_fee: InsuranceFn = lambda r, p: p * 0.2
 
     processor = make_processor(
         accept=accept, apply_discount=apply_discount, insurance_fee=insurance_fee
@@ -217,7 +265,7 @@ def test_make_duration_discount_is_isolated_from_later_changes() -> None:
 
 
 def test_stamp_total_uses_injected_clock() -> None:
-    fake_now = lambda: 1_700_000_000.0  # noqa: E731
+    fake_now = lambda: 1_700_000_000.0
     assert stamp_total(99.0, fake_now) == (99.0, 1_700_000_000.0)
     assert stamp_total(99.0, fake_now) == stamp_total(99.0, fake_now)
 
@@ -237,8 +285,8 @@ def test_stamp_report_does_not_mutate(sample_rentals: list[Rental]) -> None:
 
 
 def test_compose() -> None:
-    inc: Callable[[int], int] = lambda x: x + 1  # noqa: E731
-    dbl: Callable[[int], int] = lambda x: x * 2  # noqa: E731
+    inc: Callable[[int], int] = lambda x: x + 1
+    dbl: Callable[[int], int] = lambda x: x * 2
     assert compose(inc, dbl)(5) == 11  # inc(dbl(5))
     assert compose(dbl, inc)(5) == 12  # dbl(inc(5))
 
