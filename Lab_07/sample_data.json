@@ -1,0 +1,11 @@
+[
+  {"title": "  inception ", "genre": "Sci-Fi", "year": 2010, "rating": 8.8, "votes": 2400000},
+  {"title": "interstellar", "genre": "sci-fi", "year": 2014, "rating": 8.7, "votes": 2000000},
+  {"title": "the dark knight", "genre": "Action", "year": 2008, "rating": 9.0, "votes": 2800000},
+  {"title": "parasite", "genre": "Drama", "year": 2019, "rating": 8.5, "votes": 900000},
+  {"title": "joker", "genre": "Drama", "year": 2019, "rating": 8.4, "votes": 1400000},
+  {"title": "mad max: fury road", "genre": "Action", "year": 2015, "rating": 8.1, "votes": 1100000},
+  {"title": "tenet", "genre": "Sci-Fi", "year": 2020, "rating": 7.3, "votes": 600000},
+  {"title": "the matrix", "genre": "Sci-Fi", "year": 1999, "rating": 8.7, "votes": 2100000},
+  {"title": "cats", "genre": "Musical", "year": 2019, "rating": 2.8, "votes": 50000}
+]
